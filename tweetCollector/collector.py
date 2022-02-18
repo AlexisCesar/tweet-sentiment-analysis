@@ -49,38 +49,52 @@ def collectTweets():
 
         # Show the tweet
         print('\n' * 100)
-        collectedTweet = findTweetBasedOnKeyword(keyword)
-        print('Collected tweet:\n')
-        print(collectedTweet)
-        print('\n\n')
+        collectedTweets = findTweetBasedOnKeyword(keyword, 1000)
+        size = len(collectedTweets)
+        c = 1
+        for tweet in collectedTweets:
+            print('\n' * 100)
+            tweetText = tweet.full_text
+            print('Collected tweet:\n')
+            print(f'TWEET {c} OF {size}')
+            print(tweetText)
+            print('\n\n')
 
-        # Ask for classification (positive/negative)
-        print('[1] - Classify as POSITIVE')
-        print('[2] - Classify as NEGATIVE')
-        print('[3] - Skip this tweet')
-        option = int(input('>>> '))
+            # Ask for classification (positive/negative)
+            print('[1] - Classify as POSITIVE')
+            print('[2] - Classify as NEGATIVE')
+            print('[3] - Skip this tweet')
+            option = int(input('>>> '))
 
-        print('\n' * 100)
-        if option != 3:
-            # Store into the database
-            if option == 1:
-                print('Storing tweet in POSITIVE collection...')
-                tweetToSave = {
-                    "tweet": collectedTweet
-                }
-                dbResponse = positiveTweets.insert_one(tweetToSave)
-                print('Tweet stored with id: ')
-                print(dbResponse.inserted_id)
-            elif option == 2:
-                print('Storing tweet in NEGATIVE collection...')
-                tweetToSave = {
-                    "tweet": collectedTweet
-                }
-                dbResponse = negativeTweets.insert_one(tweetToSave)
-                print('Tweet stored with id: ')
-                print(dbResponse.inserted_id)
-        else:
-            print('Tweet skipped')
+            print('\n' * 100)
+            if option != 3:
+                # Store into the database
+                if option == 1:
+                    print('Storing tweet in POSITIVE collection...')
+                    tweetToSave = {
+                        "tweet": tweetText
+                    }
+                    dbResponse = positiveTweets.insert_one(tweetToSave)
+                    print('Tweet stored with id: ')
+                    print(dbResponse.inserted_id)
+                elif option == 2:
+                    print('Storing tweet in NEGATIVE collection...')
+                    tweetToSave = {
+                        "tweet": tweetText
+                    }
+                    dbResponse = negativeTweets.insert_one(tweetToSave)
+                    print('Tweet stored with id: ')
+                    print(dbResponse.inserted_id)
+            else:
+                print('Tweet skipped')
+            
+            print(f'\n\nContinue in this keyword? [{keyword}] - {c}/{size}')
+            c += 1
+            print('[1] - Yes')
+            print('[2] - No')
+            option = int(input('>>> '))
+            if option == 2:
+                break
         print('\n')
 
         # Ask if continue or stops
@@ -92,9 +106,9 @@ def collectTweets():
         if option == 2:
             break
 
-def findTweetBasedOnKeyword(keyword):
-    tweets = api.search_tweets(q=keyword + ' -filter:retweets', lang="pt", count=1, result_type="recent", tweet_mode='extended')
-    return tweets[0].full_text
+def findTweetBasedOnKeyword(keyword, amount):
+    tweets = api.search_tweets(q=keyword + ' -filter:retweets', lang="pt", count=amount, result_type="recent", tweet_mode='extended')
+    return tweets
 
 def printPositiveTweets():
     tweets = positiveTweets.find()
