@@ -46,7 +46,7 @@ print("accuracy score: " + str(model.score(X_test, y_test)))
 
 text_to_classify = "bom demais amei"
 
-
+print('Word: ' + text_to_classify)
 print("Classified as:")
 result = model.predict([text_to_classify])
 
