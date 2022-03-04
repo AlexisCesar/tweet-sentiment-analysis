@@ -1,42 +1,75 @@
+from itertools import count
+from sys import prefix
 from sklearn.datasets import make_classification
 from matplotlib import pyplot
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix
+from nltk.stem import SnowballStemmer
+from nltk.corpus import stopwords
 import pandas as pd
-
-# TODO Add logistic regression classifier
+import json
+import re
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.pipeline import Pipeline
+from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer, TfidfTransformer
+from sklearn.feature_selection import SelectKBest, chi2
 
 # Generating dataset
 
-x, y = make_classification(
-    n_samples=100,
-    n_features=1,
-    n_classes=2,
-    n_clusters_per_class=1,
-    flip_y=0.03,
-    n_informative=1,
-    n_redundant=0,
-    n_repeated=0
-)
+json_data = None
+with open('../../mock/mockTestData.json', encoding='utf-8') as data_file:
+    lines = data_file.readlines()
+    joined_lines = "[" + ",".join(lines) + "]"
 
-#print(x)
-#print(y)
+    json_data = json.loads(joined_lines)
 
-#pyplot.scatter(x, y, c = y, cmap='rainbow')
-#pyplot.title('Logistic Regression')
-#pyplot.show()
+data = pd.DataFrame(json_data)
 
-x_train, x_test, y_train, y_test = train_test_split(x, y, random_state=1)
+X_train, X_test, y_train, y_test = train_test_split(data.tweet, data.sentiment, test_size=0.1)
 
-classifier = LogisticRegression()
-classifier.fit(x_train, y_train)
+count_vect = CountVectorizer()
+X_train_counts = count_vect.fit_transform(data['tweet'])
+#print(X_train_counts.shape)
 
-prediction = classifier.predict(x_test)
+tfidf_transformer = TfidfTransformer()
+X_train_tfidf = tfidf_transformer.fit_transform(X_train_counts)
 
-#print(confusion_matrix(y_test, prediction)) [TP, FP], [FN, TN]
+clf = LogisticRegression().fit(X_train_tfidf, data['sentiment'])
 
-matrix = confusion_matrix(y_test, prediction)
+text_to_analyse = ['Curso excelente bom e incrível adorei']
+X_new_counts = count_vect.transform(text_to_analyse)
+X_new_tfidf = tfidf_transformer.transform(X_new_counts)
 
-print('TP:' + str(matrix[0][0]) + " | FP:" + str(matrix[0][1]))
-print('FN:' + str(matrix[1][0]) + " | TN:" + str(matrix[1][1]))
+print("Text to analyze: " + text_to_analyse[0])
+predicted = clf.predict(X_new_tfidf)
+print("Predicted as: ")
+if predicted[0] == 1:
+    print("Positive")
+else:
+    print("Negative")
+
+text_to_analyse = ['Muito ruim odiei']
+X_new_counts = count_vect.transform(text_to_analyse)
+X_new_tfidf = tfidf_transformer.transform(X_new_counts)
+
+print("Text to analyze: " + text_to_analyse[0])
+predicted = clf.predict(X_new_tfidf)
+print("Predicted as: ")
+if predicted[0] == 1:
+    print("Positive")
+else:
+    print("Negative")
+
+    
+text_to_analyse = ['Esse jogo é excelente']
+X_new_counts = count_vect.transform(text_to_analyse)
+X_new_tfidf = tfidf_transformer.transform(X_new_counts)
+
+print("Text to analyze: " + text_to_analyse[0])
+predicted = clf.predict(X_new_tfidf)
+print("Predicted as: ")
+if predicted[0] == 1:
+    print("Positive")
+else:
+    print("Negative")
