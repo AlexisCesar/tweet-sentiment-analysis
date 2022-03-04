@@ -46,4 +46,11 @@ print("accuracy score: " + str(model.score(X_test, y_test)))
 
 text_to_classify = "bom demais amei"
 
-print(model.predict([text_to_classify]))
+
+print("Classified as:")
+result = model.predict([text_to_classify])
+
+if result[0] == 0:
+    print("Negative")
+else:
+    print("Positive")
