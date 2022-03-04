@@ -14,6 +14,9 @@ from sklearn.naive_bayes import MultinomialNB
 from sklearn.pipeline import Pipeline
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer, TfidfTransformer
 from sklearn.feature_selection import SelectKBest, chi2
+from pymongo import MongoClient
+import tweepy
+import sys
 
 # Generating dataset
 
@@ -24,52 +27,54 @@ with open('../../mock/mockTestData.json', encoding='utf-8') as data_file:
 
     json_data = json.loads(joined_lines)
 
-data = pd.DataFrame(json_data)
+# data = pd.DataFrame(json_data)
 
-X_train, X_test, y_train, y_test = train_test_split(data.tweet, data.sentiment, test_size=0.1)
+# MongoDB connection
+client = MongoClient('mongodb://root:Database2022@localhost:27018')
+db = client['TweetSentimentAnalysis']
+negativeTweets = db["NegativeTweets"]
+positiveTweets = db["PositiveTweets"]
+
+# Positive Tweets Dataframe
+positiveDataframe = positiveTweets.find()
+positiveDataframe = pd.DataFrame(positiveDataframe)
+positiveDataframe['sentiment'] = 1
+
+# Negative Tweets Dataframe
+negativeDataFrame = negativeTweets.find()
+negativeDataFrame = pd.DataFrame(negativeDataFrame)
+negativeDataFrame['sentiment'] = 0
+
+# Dataframes combination
+frames = [positiveDataframe, negativeDataFrame]
+tweetDataFrame = pd.concat(frames)
+
+# print(tweetDataFrame)
+# input()
+
+X_train, X_test, y_train, y_test = train_test_split(tweetDataFrame.tweet, tweetDataFrame.sentiment, test_size=0.1)
 
 count_vect = CountVectorizer()
-X_train_counts = count_vect.fit_transform(data['tweet'])
+X_train_counts = count_vect.fit_transform(tweetDataFrame['tweet'])
 #print(X_train_counts.shape)
 
 tfidf_transformer = TfidfTransformer()
 X_train_tfidf = tfidf_transformer.fit_transform(X_train_counts)
 
-clf = LogisticRegression().fit(X_train_tfidf, data['sentiment'])
+clf = LogisticRegression().fit(X_train_tfidf, tweetDataFrame['sentiment'])
 
-text_to_analyse = ['Curso excelente bom e incrível adorei']
-X_new_counts = count_vect.transform(text_to_analyse)
-X_new_tfidf = tfidf_transformer.transform(X_new_counts)
+while True:
+    print('\n' * 100)
+    receivedText = str(input("Insert text\n>>>"))
+    text_to_analyse = [receivedText]
+    X_new_counts = count_vect.transform(text_to_analyse)
+    X_new_tfidf = tfidf_transformer.transform(X_new_counts)
 
-print("Text to analyze: " + text_to_analyse[0])
-predicted = clf.predict(X_new_tfidf)
-print("Predicted as: ")
-if predicted[0] == 1:
-    print("Positive")
-else:
-    print("Negative")
-
-text_to_analyse = ['Muito ruim odiei']
-X_new_counts = count_vect.transform(text_to_analyse)
-X_new_tfidf = tfidf_transformer.transform(X_new_counts)
-
-print("Text to analyze: " + text_to_analyse[0])
-predicted = clf.predict(X_new_tfidf)
-print("Predicted as: ")
-if predicted[0] == 1:
-    print("Positive")
-else:
-    print("Negative")
-
-    
-text_to_analyse = ['Esse jogo é excelente']
-X_new_counts = count_vect.transform(text_to_analyse)
-X_new_tfidf = tfidf_transformer.transform(X_new_counts)
-
-print("Text to analyze: " + text_to_analyse[0])
-predicted = clf.predict(X_new_tfidf)
-print("Predicted as: ")
-if predicted[0] == 1:
-    print("Positive")
-else:
-    print("Negative")
+    print("Text to analyze: " + text_to_analyse[0])
+    predicted = clf.predict(X_new_tfidf)
+    print("Predicted as: ")
+    if predicted[0] == 1:
+        print("Positive")
+    else:
+        print("Negative")
+    input()
