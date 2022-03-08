@@ -1,7 +1,3 @@
-import json
-import pandas as pd
-from pymongo import MongoClient
-
 def classify(textToClassify):
     
     print('Naive Bayes')
@@ -15,29 +11,22 @@ def classify(textToClassify):
     bag_of_words = list()
 
     SENTIMENT = 1
-
-    ###
-    # MongoDB connection
-    client = MongoClient('mongodb://root:Database2022@localhost:27018')
-    db = client['TweetSentimentAnalysis']
-    negativeTweets = db["NegativeTweets"]
-    positiveTweets = db["PositiveTweets"]
-
-    # Creating the list
-    training_set = []
-    for tweet in positiveTweets.find():
-        training_set.append([tweet['tweet'], 'positive'])
-
-    for tweet in negativeTweets.find():
-        training_set.append([tweet['tweet'], 'negative'])
-    ###
+    training_set = [
+        ['Eu odeio pizza', 'negative'],
+        ['Eu odeio esse clima', 'negative'],
+        ['Mds como eu amo pizza', 'positive'],
+        ['Hoje é um bom dia', 'positive'],
+        ['Não, isso não é bom', 'negative'],
+        ['essa é uma arte legal', 'positive'],
+        ['Não amigo, eu não te odeio :)', 'positive']
+        ]
 
     for text in training_set:
 
         text_words = text[WORD].split()
         word_was_already_registered = False
         index_of_already_registered_word = -1
-        # print (text_words)
+        print (text_words)
         
         for word in text_words:
             for registered_word in bag_of_words:
@@ -109,8 +98,4 @@ def classify(textToClassify):
 
     print(given_text, " - Classification: ", classification)
 
-while True:
-    print('\n' * 100)
-    receivedText = str(input("Insert text\n>>>"))
-    classify(receivedText)
-    input()
+classify("Eu odeio pizza")
