@@ -79,11 +79,17 @@ SENTIMENT = 1
 
 # Creating the list
 training_set = []
-for tweet in positiveTweets.find():
-    training_set.append([tweet['tweet'], 'positive'])
 
-for tweet in negativeTweets.find():
-    training_set.append([tweet['tweet'], 'negative'])
+for tweet in X_train:
+    training_set.append([tweet, ''])
+
+i = 0
+for classification in y_train:
+    if classification == 1:
+        training_set[i][1] = 'positive'
+    else:
+        training_set[i][1] = 'negative'
+    i = i + 1
 
 for text in training_set:
 
@@ -140,6 +146,81 @@ for registered_word in bag_of_words:
     registered_word[POSITIVE_TENDENCY] = registered_word[POSITIVE_OCCURRENCES] / total_positive_words_registered
     registered_word[NEGATIVE_TENDENCY] = registered_word[NEGATIVE_OCCURRENCES] / total_negative_word_registered
 
+# INITIAL SCREEN - SHOWS EACH CLASSIFIER METRICS
+print('\n' * 50)
+print('ENSEMBLEE CLASSIFIER - SVM - LOGISTIC REGRESSION - NAIVE BAYES')
+print('\nPRESS ENTER TO SEE THE METRICS')
+input()
+
+print("-" * 50)
+print("SVM METRICS:")
+y_pred = svm_classifier.predict(vectorizer.transform(X_test))
+print("Accuracy score: ", end="")
+print(accuracy_score(y_test, y_pred))
+print()
+print(classification_report(y_test, y_pred))
+print("PRESS ENTER TO CONTINUE...")
+input()
+
+print("-" * 50)
+print("LOGISTIC REGRESSION METRICS:")
+X_new_counts = count_vect.transform(X_test)
+X_new_tfidf = tfidf_transformer.transform(X_new_counts)
+y_pred = logistic_regression_classifier.predict(X_new_tfidf)
+print("Accuracy score: ", end="")
+print(accuracy_score(y_test, y_pred))
+print()
+print(classification_report(y_test, y_pred))
+print("PRESS ENTER TO CONTINUE...")
+input()
+
+print("-" * 50)
+print("NAIVE BAYES METRICS:")
+# TODO ADD NAIVE BAYES METRICS CALCULATION
+correct_predictions = 0
+incorrect_predictions = 0
+
+nb_test_list = []
+for tweet in X_test:
+    nb_test_list.append([tweet, -1])
+
+i = 0
+for classification in y_test:
+    if classification == 1:
+        nb_test_list[i][1] = 1
+    else:
+        nb_test_list[i][1] = 0
+    i = i + 1
+
+for tweet in nb_test_list:
+    positive_probability = positive_initial_guess
+    negative_probability = negative_initial_guess
+
+    for word in tweet[0].upper().split():
+        for registered_word in bag_of_words:
+            if word == registered_word[WORD]:
+                positive_probability = positive_probability * registered_word[POSITIVE_TENDENCY]
+                negative_probability = negative_probability * registered_word[NEGATIVE_TENDENCY]
+
+    naive_bayes_prediction = -1
+
+    if positive_probability > negative_probability:
+        naive_bayes_prediction = 1
+    elif negative_probability > positive_probability:
+        naive_bayes_prediction = 0
+    
+    if naive_bayes_prediction == tweet[1]:
+        correct_predictions = correct_predictions + 1
+    else:
+        incorrect_predictions = incorrect_predictions + 1
+
+total_predictions = correct_predictions + incorrect_predictions
+naive_bayes_accuracy = correct_predictions / total_predictions
+
+print("Accuracy score: ", end="")
+print(naive_bayes_accuracy)
+print("PRESS ENTER TO CONTINUE...")
+input()
 
 while True:
     print('\n' * 50)
