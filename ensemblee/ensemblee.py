@@ -40,14 +40,14 @@ for tweet_text in tweetDataFrame.tweet:
 X_train, X_test, y_train, y_test = train_test_split(tweetDataFrame.tweet, tweetDataFrame.sentiment, test_size=0.33)
 
 # TRAINING PHASE: SUPPORT VECTOR MACHINE
-vectorizer = TfidfVectorizer(max_features=1000, decode_error="ignore")
+vectorizer = TfidfVectorizer(max_features=1000, decode_error="ignore", ngram_range=(1, 2))
 vectorizer.fit(X_train)
 
 # model
 svm_classifier = LinearSVC().fit(vectorizer.transform(X_train), y_train)
 
 # TRAINING PHASE: LOGISTIC REGRESSION
-count_vect = CountVectorizer()
+count_vect = CountVectorizer(ngram_range=(1, 2))
 X_train_counts = count_vect.fit_transform(tweetDataFrame['tweet'])
 
 tfidf_transformer = TfidfTransformer()
