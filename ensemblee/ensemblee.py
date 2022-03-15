@@ -1,33 +1,11 @@
-from sklearn import svm
-from sklearn.datasets import load_files
-from matplotlib import pyplot as plt
-from sklearn.model_selection import train_test_split
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.svm import LinearSVC
-from sklearn.metrics import accuracy_score, classification_report
-import numpy as np
-import pandas as pd
-import json
-from pymongo import MongoClient
-from itertools import count
-from sys import prefix
-from sklearn.datasets import make_classification
-from matplotlib import pyplot
-from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import confusion_matrix
-from nltk.stem import SnowballStemmer
-from nltk.corpus import stopwords
-import pandas as pd
-import json
-import re
-from sklearn.naive_bayes import MultinomialNB
-from sklearn.pipeline import Pipeline
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer, TfidfTransformer
-from sklearn.feature_selection import SelectKBest, chi2
+from sklearn.metrics import accuracy_score, classification_report
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.svm import LinearSVC
 from pymongo import MongoClient
-import tweepy
-import sys
+import pandas as pd
+import re
 
 # MongoDB Connection
 client = MongoClient('mongodb://root:Database2022@localhost:27018')
@@ -48,8 +26,18 @@ negativeDataFrame['sentiment'] = 0
 # Dataframes combination
 frames = [positiveDataframe, negativeDataFrame]
 tweetDataFrame = pd.concat(frames)
+
 # data prep
-X_train, X_test, y_train, y_test = train_test_split(tweetDataFrame.tweet, tweetDataFrame.sentiment)
+my_regex = re.compile("^[a-zA-Z]+$")
+for tweet_text in tweetDataFrame.tweet:
+    cleaned_text = ""
+    for word in tweet_text.split(" "):
+        if my_regex.match(word):
+            cleaned_text = cleaned_text + word + " "
+    tweet_text = cleaned_text.strip()
+
+# dataset division
+X_train, X_test, y_train, y_test = train_test_split(tweetDataFrame.tweet, tweetDataFrame.sentiment, test_size=0.33)
 
 # TRAINING PHASE: SUPPORT VECTOR MACHINE
 vectorizer = TfidfVectorizer(max_features=1000, decode_error="ignore")
@@ -93,7 +81,7 @@ for classification in y_train:
 
 for text in training_set:
 
-    text_words = text[WORD].split()
+    text_words = text[WORD].split(" ")
     word_was_already_registered = False
     index_of_already_registered_word = -1
     
@@ -228,6 +216,15 @@ while True:
 
     # ASKS FOR TEXT INPUT
     text_to_analyse = str(input('\nInsert text to classify\n>>>'))
+
+    # TEXT RECEIVED PREP
+    cleaned_text = ""
+    for word in text_to_analyse.split(" "):
+        if my_regex.match(word):
+            cleaned_text = cleaned_text + word + " "
+    text_to_analyse = cleaned_text.strip()
+    print('Cleaned: ' + text_to_analyse)
+
     text_to_analyse_svm = [text_to_analyse]
     text_to_analyse_lr = [text_to_analyse]
     # INITIALIZE PREDICTION VECTOR
