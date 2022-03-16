@@ -5,6 +5,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.svm import LinearSVC
 from pymongo import MongoClient
 import pandas as pd
+import string
 import re
 
 # MongoDB Connection
@@ -28,13 +29,29 @@ frames = [positiveDataframe, negativeDataFrame]
 tweetDataFrame = pd.concat(frames)
 
 # data prep
-my_regex = re.compile("^[a-zA-Z]+$")
+my_regex = re.compile("^[A-zÀ-ú]+$")
 for tweet_text in tweetDataFrame.tweet:
     cleaned_text = ""
+    # remove hiperlinks
+    tweet_text = re.sub(r'http\S+', '', tweet_text)
+    
+    # remove mentions
+    tweet_text = re.sub(r'@\S+', '', tweet_text)
+    
+    # remove hashtags
+    tweet_text = re.sub(r'#\S+', '', tweet_text)
+
+    # remove punctuaction
+    tweet_text = tweet_text.translate(str.maketrans('', '', string.punctuation))
+
+    # remove invalid tokens
     for word in tweet_text.split(" "):
         if my_regex.match(word):
             cleaned_text = cleaned_text + word + " "
     tweet_text = cleaned_text.strip()
+    # print('cleaned:')
+    # print(tweet_text)
+    # input()
 
 # dataset division
 X_train, X_test, y_train, y_test = train_test_split(tweetDataFrame.tweet, tweetDataFrame.sentiment, test_size=0.33)
@@ -78,6 +95,9 @@ for classification in y_train:
     else:
         training_set[i][1] = 'negative'
     i = i + 1
+
+#print(training_set)
+#input()
 
 for text in training_set:
 
@@ -190,7 +210,7 @@ for tweet in nb_test_list:
                 positive_probability = positive_probability * registered_word[POSITIVE_TENDENCY]
                 negative_probability = negative_probability * registered_word[NEGATIVE_TENDENCY]
 
-    naive_bayes_prediction = -1
+    naive_bayes_prediction = -1 # There's a problem here, what about when pos/neg hits 0?
 
     if positive_probability > negative_probability:
         naive_bayes_prediction = 1
@@ -219,6 +239,19 @@ while True:
 
     # TEXT RECEIVED PREP
     cleaned_text = ""
+
+    # remove hiperlinks
+    text_to_analyse = re.sub(r'http\S+', '', text_to_analyse)
+    
+    # remove mentions
+    text_to_analyse = re.sub(r'@\S+', '', text_to_analyse)
+    
+    # remove hashtags
+    text_to_analyse = re.sub(r'#\S+', '', text_to_analyse)
+
+    # remove punctuaction
+    text_to_analyse = text_to_analyse.translate(str.maketrans('', '', string.punctuation))
+
     for word in text_to_analyse.split(" "):
         if my_regex.match(word):
             cleaned_text = cleaned_text + word + " "
@@ -227,6 +260,7 @@ while True:
 
     text_to_analyse_svm = [text_to_analyse]
     text_to_analyse_lr = [text_to_analyse]
+    
     # INITIALIZE PREDICTION VECTOR
     predictions = []
 
@@ -253,7 +287,7 @@ while True:
                 positive_probability = positive_probability * registered_word[POSITIVE_TENDENCY]
                 negative_probability = negative_probability * registered_word[NEGATIVE_TENDENCY]
 
-    naive_bayes_prediction = -1
+    naive_bayes_prediction = -1 # There's a problem here, what about when pos/neg hits 0?
 
     if positive_probability > negative_probability:
         naive_bayes_prediction = 1
