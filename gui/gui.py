@@ -4,7 +4,7 @@ import sys
 # GUI definition
 class Window:
     def __init__(self):
-        psg.theme('Dark')
+        psg.theme('Reddit')
 
         # Layout
         layout = [
@@ -36,8 +36,13 @@ class Window:
                 sys.exit(1)
 
             if self.event == 'Iniciar Análise':
+                self.window.FindElement('output').update('')
                 keyword = self.values['keyword']
-                maxTweetCount = self.values['maxTweetCount']
+                if keyword.replace(' ', '') == '':
+                    print('Informe uma palavra-chave válida!')
+                    continue
+
+                maxTweetCount = int(self.values['maxTweetCount'])
                 print(f'BUSCANDO {maxTweetCount} TWEETS SOBRE: \'{keyword}\'')
 
 window = Window()
