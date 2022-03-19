@@ -1,11 +1,15 @@
+from itertools import count
 import PySimpleGUI as psg
 import sys
+from numpy import result_type
 from pymongo import MongoClient
 from classifiers_commons import clearTextList
 import pandas as pd
 from lr import LogisticRegressionClassifier
 from svm import SupportVectorMachineClassifier
 from nb import NaiveBayesClassifier
+from api_secrets import Secrets
+import tweepy
 
 # GUI definition
 class Window:
@@ -36,6 +40,8 @@ class Window:
         lr_classifier = LogisticRegressionClassifier()
         nb_classifier = NaiveBayesClassifier()
 
+        twitter_api = getTwitterApi()
+
         while True:
             self.event, self.values = self.window.Read()
 
@@ -55,8 +61,15 @@ class Window:
                 print(f'Buscando {maxTweetCount} tweets sobre: \'{keyword}\'')
                 
                 # Call a function to retrieve the tweets and store into a list
-                tweets_found = ['@pessoaX eu te amo', '@pessoaY eu te odeio', 'livro muito bom #gostei', 'livro excelente https://livro.com', 'jogo muito ruim']
-                
+                # tweets_found = ['@pessoaX eu te amo', '@pessoaY eu te odeio', 'livro muito bom #gostei', 'livro excelente https://livro.com', 'jogo muito ruim']
+                tweets_found = []
+                for tweet in tweepy.Cursor(twitter_api.search_tweets, q=keyword + '-filter:retweets',
+                                            count=maxTweetCount,
+                                            result_type="recent",
+                                            tweet_mode='extended',
+                                            lang="pt").items(maxTweetCount):
+                    tweets_found.append(tweet.full_text)
+                # print(tweets_found)
                 # Clean tweets with data preparation steps
                 tweets_found = clearTextList(tweets_found)
                 # print(tweets_found)
@@ -82,6 +95,21 @@ class Window:
 
                 print(f"Classificados com sentimento negativo: {total_predicted_as_negative} ({total_predicted_as_negative / total_predicted * 100}%)")
                 print(f"Classificados com sentimento positivo: {total_predicted_as_positive} ({total_predicted_as_positive / total_predicted * 100}%)")
+
+def getTwitterApi():
+    CONSUMER_KEY=Secrets.CONSUMER_KEY
+    CONSUMER_SECRET=Secrets.CONSUMER_SECRET
+    ACCESS_TOKEN=Secrets.ACCESS_TOKEN
+    ACCESS_TOKEN_SECRET=Secrets.ACCESS_TOKEN_SECRET
+
+    auth = tweepy.OAuth1UserHandler(CONSUMER_KEY, CONSUMER_SECRET)
+    auth.set_access_token(ACCESS_TOKEN, ACCESS_TOKEN_SECRET)
+    api = tweepy.API(auth)
+
+    if(not api):
+        sys.exit("Twitter API authentication failed.")
+
+    return api
 
 window = Window()
 window.start()
