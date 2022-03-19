@@ -12,21 +12,23 @@ class Window:
         psg.theme('Reddit')
 
         layout = [
-            [psg.Text('Palavra-Chave (Nome, Pessoa, Empresa, Hashtag, Usuário...)', size=(100,0))], 
-            [psg.Input(size=(35,0), key='keyword')],
-            [psg.Text('Exemplo: #Brasil, @g1, economia...', size=(100,0))], 
-            [psg.Text('', size=(100,0))], 
-            [psg.Text('Quantidade de tweets a serem buscados:', size=(100,0))], 
-            [psg.Slider(range=(1, 100), default_value= 10, orientation='h', size=(15, 20), key='maxTweetCount')],
-            [psg.Text('Nota: serão recuperados os N tweets mais recentes sobre a palavra-chave', size=(100,0))], 
-            [psg.Text('', size=(100,0))], 
-            [psg.Button('Iniciar Análise')],
-            [psg.Text('', size=(100,0))], 
-            [psg.Text('Resultado:', size=(100,0))], 
-            [psg.Output(size=(50, 10), key='output')]
+            [psg.Text('Twitter Sentiment Analysis', font=('Times New Roman', 24))],
+            [psg.Text('', font=('Times New Roman', 16))], 
+            [psg.Text('Palavra-Chave (Nome, Pessoa, Empresa, Hashtag, Usuário...)', font=('Times New Roman', 16))],
+            [psg.Input(size=(35, 0), key='keyword', font=('Times New Roman', 18))],
+            [psg.Text('Exemplo: #Brasil, @g1, economia...', font=('Times New Roman', 16))], 
+            [psg.Text('')], 
+            [psg.Text('Quantidade de tweets a serem buscados:', font=('Times New Roman', 16))],
+            [psg.Slider(range=(1, 100), default_value= 10, orientation='h', size=(30, 60), key='maxTweetCount', font=('Times New Roman', 16))],
+            [psg.Text('Nota: serão recuperados os N tweets mais recentes sobre a palavra-chave', font=('Times New Roman', 16))], 
+            [psg.Text('')], 
+            [psg.Button('Iniciar Análise', font=('Times New Roman', 16)), psg.Button('Exibir Métricas dos Classificadores', font=('Times New Roman', 16))],
+            [psg.Text('')], 
+            [psg.Text('Saída:', font=('Times New Roman', 16))], 
+            [psg.Output(size=(50, 10), key='output', font=('Times New Roman', 16))]
         ]
 
-        self.window = psg.Window("Twitter Sentiment Analysis", size=(800, 600)).layout(layout)
+        self.window = psg.Window("Twitter Sentiment Analysis", size=(900, 800), element_justification='c').layout(layout)
 
     def start(self):
         svm_classifier = SupportVectorMachineClassifier()
@@ -41,6 +43,11 @@ class Window:
             if self.event in (None, 'Exit'):
                 sys.exit(1)
 
+            if self.event == 'Exibir Métricas dos Classificadores':
+                self.window.FindElement('output').update('')
+                print('Métricas: ...')
+                continue
+            
             if self.event == 'Iniciar Análise':
                 self.window.FindElement('output').update('')
 
