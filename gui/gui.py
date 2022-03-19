@@ -17,7 +17,6 @@ class Window:
             [psg.Text('Nota: serão recuperados os N tweets mais recentes sobre a palavra-chave', size=(100,0))], 
             [psg.Text('', size=(100,0))], 
             [psg.Button('Iniciar Análise')],
-            [psg.Text('_________________________________', size=(100,0))], 
             [psg.Text('', size=(100,0))], 
             [psg.Text('Resultado:', size=(100,0))], 
             [psg.Output(size=(50, 10), key='output')]
@@ -27,9 +26,9 @@ class Window:
         self.window = psg.Window("Twitter Sentiment Analysis", size=(800, 600)).layout(layout)
 
     def start(self):
-        while True:
+        # May the classifiers' training phase goes here
 
-            # User input data extraction
+        while True:
             self.event, self.values = self.window.Read()
 
             if self.event in (None, 'Exit'):
@@ -37,13 +36,21 @@ class Window:
 
             if self.event == 'Iniciar Análise':
                 self.window.FindElement('output').update('')
+
                 keyword = self.values['keyword']
                 if keyword.replace(' ', '') == '':
                     print('Informe uma palavra-chave válida!')
                     continue
-
+                
+                keyword = keyword.strip()
                 maxTweetCount = int(self.values['maxTweetCount'])
-                print(f'BUSCANDO {maxTweetCount} TWEETS SOBRE: \'{keyword}\'')
+                print(f'Buscando {maxTweetCount} tweets sobre: \'{keyword}\'')
+                
+                # Call a function to retrieve the tweets and store into a list
+
+                # Perform classification of each list item and store in pos/neg counters
+
+                # Inform how many are classified as pos and how many as neg, with their percentage
 
 window = Window()
 window.start()
