@@ -78,8 +78,8 @@ class Window:
 
                 total_predicted = total_predicted_as_negative + total_predicted_as_positive
 
-                print(f"Classificados com sentimento negativo: {total_predicted_as_negative} ({total_predicted_as_negative / total_predicted * 100}%)")
-                print(f"Classificados com sentimento positivo: {total_predicted_as_positive} ({total_predicted_as_positive / total_predicted * 100}%)")
+                print(f"Classificados com sentimento negativo: {total_predicted_as_negative} ({(total_predicted_as_negative / total_predicted * 100):.2f}%)")
+                print(f"Classificados com sentimento positivo: {total_predicted_as_positive} ({(total_predicted_as_positive / total_predicted * 100):.2f}%)")
 
 def getTwitterApi():
     CONSUMER_KEY=Secrets.CONSUMER_KEY
