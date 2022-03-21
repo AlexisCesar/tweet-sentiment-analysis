@@ -31,12 +31,15 @@ class Window:
         self.window = psg.Window("Twitter Sentiment Analysis", size=(900, 800), element_justification='c').layout(layout)
 
     def start(self):
+        print('Starting classifiers...')
         svm_classifier = SupportVectorMachineClassifier()
         lr_classifier = LogisticRegressionClassifier()
         nb_classifier = NaiveBayesClassifier()
 
+        print('Connecting to Twitter\'s API...')
         twitter_api = getTwitterApi()
 
+        print('Application started.')
         while True:
             self.event, self.values = self.window.Read()
 
@@ -103,5 +106,6 @@ def getTwitterApi():
 
     return api
 
+print('Starting application...')
 window = Window()
 window.start()
