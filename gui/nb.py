@@ -33,7 +33,7 @@ class NaiveBayesClassifier:
         tweetDataFrame.tweet = clearTextList(tweetDataFrame.tweet)
 
         # dataset division
-        X_train, X_test, y_train, y_test = train_test_split(tweetDataFrame.tweet, tweetDataFrame.sentiment, test_size=0.33)
+        X_train, self.X_test, y_train, self.y_test = train_test_split(tweetDataFrame.tweet, tweetDataFrame.sentiment, test_size=0.33)
 
         # TRAINING PHASE: NAIVE BAYES
         WORD = 0
@@ -136,6 +136,53 @@ class NaiveBayesClassifier:
         elif negative_probability > positive_probability:
             naive_bayes_prediction = 0
         return naive_bayes_prediction
+
+    def testAndReturnAccuracy(self):
+        WORD = 0
+        POSITIVE_TENDENCY = 4
+        NEGATIVE_TENDENCY = 5
+        
+        correct_predictions = 0
+        incorrect_predictions = 0
+
+        nb_test_list = []
+        for tweet in self.X_test:
+            nb_test_list.append([tweet, -1])
+
+        i = 0
+        for classification in self.y_test:
+            if classification == 1:
+                nb_test_list[i][1] = 1
+            else:
+                nb_test_list[i][1] = 0
+            i = i + 1
+
+        for tweet in nb_test_list:
+            positive_probability = self.positive_initial_guess
+            negative_probability = self.negative_initial_guess
+
+            for word in tweet[0].upper().split():
+                for registered_word in self.bag_of_words:
+                    if word == registered_word[WORD]:
+                        positive_probability = positive_probability * registered_word[POSITIVE_TENDENCY]
+                        negative_probability = negative_probability * registered_word[NEGATIVE_TENDENCY]
+
+            naive_bayes_prediction = -1 # There's a problem here, what about when pos/neg hits 0?
+
+            if positive_probability > negative_probability:
+                naive_bayes_prediction = 1
+            elif negative_probability > positive_probability:
+                naive_bayes_prediction = 0
+            
+            if naive_bayes_prediction == tweet[1]:
+                correct_predictions = correct_predictions + 1
+            else:
+                incorrect_predictions = incorrect_predictions + 1
+
+        total_predictions = correct_predictions + incorrect_predictions
+        naive_bayes_accuracy = correct_predictions / total_predictions
+        
+        return naive_bayes_accuracy
 
 # HOW TO USE:
 # test = NaiveBayesClassifier()

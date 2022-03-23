@@ -1,4 +1,5 @@
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
+from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 from pymongo import MongoClient
@@ -32,6 +33,9 @@ class LogisticRegressionClassifier:
 
         # Data preparation
         tweetDataFrame.tweet = clearTextList(tweetDataFrame.tweet)
+
+        X_train, self.X_test, y_train, self.y_test = train_test_split(tweetDataFrame.tweet, tweetDataFrame.sentiment, test_size=0.33)
+
        
         # TRAINING PHASE: LOGISTIC REGRESSION
         self.count_vect = CountVectorizer(ngram_range=(1, 2))
@@ -50,6 +54,12 @@ class LogisticRegressionClassifier:
 
         prediction = self.classifier.predict(X_new_tfidf)
         return prediction[0]
+
+    def testAndReturnAccuracy(self):
+        X_new_counts = self.count_vect.transform(self.X_test)
+        X_new_tfidf = self.tfidf_transformer.transform(X_new_counts)
+        y_pred = self.classifier.predict(X_new_tfidf)
+        return accuracy_score(self.y_test, y_pred)
 
 # HOW TO USE:
 # test = LogisticRegressionClassifier()

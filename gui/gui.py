@@ -22,7 +22,7 @@ class Window:
             [psg.Slider(range=(1, 100), default_value= 10, orientation='h', size=(30, 60), key='maxTweetCount', font=('Times New Roman', 16))],
             [psg.Text('Nota: serão recuperados os N tweets mais recentes sobre a palavra-chave', font=('Times New Roman', 16))], 
             [psg.Text('')], 
-            [psg.Button('Iniciar Análise', font=('Times New Roman', 16)), psg.Button('Exibir Métricas dos Classificadores', font=('Times New Roman', 16))],
+            [psg.Button('Iniciar Análise', font=('Times New Roman', 16)), psg.Button('Exibir Acurácia dos Classificadores', font=('Times New Roman', 16))],
             [psg.Text('')], 
             [psg.Text('Saída:', font=('Times New Roman', 16))], 
             [psg.Output(size=(50, 10), key='output', font=('Times New Roman', 16))]
@@ -46,9 +46,18 @@ class Window:
             if self.event in (None, 'Exit'):
                 sys.exit(1)
 
-            if self.event == 'Exibir Métricas dos Classificadores':
+            if self.event == 'Exibir Acurácia dos Classificadores':
                 self.window.FindElement('output').update('')
-                print('Métricas: ...')
+
+                acc_svm = svm_classifier.testAndReturnAccuracy() * 100
+                acc_lr = lr_classifier.testAndReturnAccuracy() *  100
+                acc_nb = nb_classifier.testAndReturnAccuracy() * 100
+                acc_ens = (acc_svm + acc_lr + acc_nb) / 3
+                print(f'Acurácia:'
+                + f'\n- Support Vector Classifier: {acc_svm:.2f}%'.replace('.', ',')
+                + f'\n- Logistic Regression: {acc_lr:.2f}%'.replace('.', ',')
+                + f'\n- Naïve Bayes: {acc_nb:.2f}%'.replace('.', ',')
+                + f'\n\nO comitê apresenta uma acurácia geral de {acc_ens:.2f}%'.replace('.', ','))
                 continue
             
             if self.event == 'Iniciar Análise':
@@ -88,8 +97,8 @@ class Window:
 
                 total_predicted = total_predicted_as_negative + total_predicted_as_positive
 
-                print(f"Classificados com sentimento negativo: {total_predicted_as_negative} ({(total_predicted_as_negative / total_predicted * 100):.2f}%)")
-                print(f"Classificados com sentimento positivo: {total_predicted_as_positive} ({(total_predicted_as_positive / total_predicted * 100):.2f}%)")
+                print(f"Classificados com sentimento negativo: {total_predicted_as_negative} ({(total_predicted_as_negative / total_predicted * 100):.2f}%)".replace('.', ','))
+                print(f"Classificados com sentimento positivo: {total_predicted_as_positive} ({(total_predicted_as_positive / total_predicted * 100):.2f}%)".replace('.', ','))
 
 def getTwitterApi():
     CONSUMER_KEY=Secrets.CONSUMER_KEY
