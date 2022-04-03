@@ -4,6 +4,8 @@
 
 This repo is dedicated to my final paper, where its goal is to develop an application that can collect tweets based on a keyword and then perform sentiment analysis using an ensemble of classifiers to show how many tweets contains negative polarity and how many contains positive polarity.
 
+Note: the interface language is Brazilian Portuguese.
+
 ## Dependencies
 To install required dependencies, go to 'app' folder and run this command:
 ```bash
