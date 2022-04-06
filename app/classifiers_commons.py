@@ -1,5 +1,8 @@
 import string
 import re
+from nltk.corpus import stopwords
+
+words_to_remove = stopwords.words('portuguese')
 
 def clearTextList(texts: list()):
     my_regex = re.compile("^[A-zÀ-ú]+$")
@@ -20,8 +23,8 @@ def clearTextList(texts: list()):
         # remove punctuaction
         text = text.translate(str.maketrans('', '', string.punctuation))
 
-        for word in text.split(" "):
-            if my_regex.match(word):
+        for word in text.split():
+            if my_regex.match(word) and word not in words_to_remove:
                 cleaned_text = cleaned_text + word + " "
         text = cleaned_text.strip()
         cleaned_text_list.append(text)
