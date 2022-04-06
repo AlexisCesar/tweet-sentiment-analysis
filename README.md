@@ -4,7 +4,7 @@
 
 This repo is dedicated to my final paper, where its goal is to develop an application that can collect tweets based on a keyword and then perform sentiment analysis using an ensemble of classifiers to show how many tweets contains negative polarity and how many contains positive polarity.
 
-Note: the interface language is Brazilian Portuguese.
+Note: the interface language is Brazilian Portuguese as in the tweets search code, to use another search language change lang="pt" (in the lang parameter of the tweepy.Cursor located in app/main.py) to lang="en" for example.
 
 ## Dependencies
 To install required dependencies, go to 'app' folder and run this command:
