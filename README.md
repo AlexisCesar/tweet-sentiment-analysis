@@ -16,8 +16,8 @@ pip3 install -r 'requirements.txt'
 This project uses a MongoDB database to store the training dataset.
 Database name: TweetSentimentAnalysis
 Collections:
-- NegativeTweetsDataset
-- PositiveTweetsDataset
+- NegativeTweets
+- PositiveTweets
 
 Collections structure looks like:
 ```JSON
