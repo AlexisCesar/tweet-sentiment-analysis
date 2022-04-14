@@ -1,5 +1,5 @@
 nltk==3.7
-pandas==1.4.2
+pandas
 pymongo==4.1.0
 PySimpleGUI==4.59.0
 scikit_learn==1.0.2
