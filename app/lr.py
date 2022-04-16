@@ -39,12 +39,12 @@ class LogisticRegressionClassifier:
        
         # TRAINING PHASE: LOGISTIC REGRESSION
         self.count_vect = CountVectorizer(ngram_range=(1, 2))
-        X_train_counts = self.count_vect.fit_transform(tweetDataFrame['tweet'])
+        X_train_counts = self.count_vect.fit_transform(X_train)
 
         self.tfidf_transformer = TfidfTransformer()
         X_train_tfidf = self.tfidf_transformer.fit_transform(X_train_counts)
 
-        logistic_regression_classifier = LogisticRegression().fit(X_train_tfidf, tweetDataFrame['sentiment'])
+        logistic_regression_classifier = LogisticRegression().fit(X_train_tfidf, y_train)
 
         self.classifier = logistic_regression_classifier
         
