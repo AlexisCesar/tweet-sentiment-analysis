@@ -8,6 +8,7 @@ import tweepy
 import sys
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 class Window:
     def __init__(self):
@@ -27,10 +28,20 @@ class Window:
             [psg.Button('Iniciar Análise', font=('Times New Roman', 16)), psg.Button('Exibir Acurácia dos Classificadores', font=('Times New Roman', 16))],
             [psg.Text('')], 
             [psg.Text('Saída:', font=('Times New Roman', 16))], 
-            [psg.Output(size=(50, 10), key='output', font=('Times New Roman', 16))]
+            [psg.Output(size=(50, 10), key='output', font=('Times New Roman', 16)), psg.Canvas(size=(600, 400), key="-CANVAS-")]
         ]
 
-        self.window = psg.Window("Twitter Sentiment Analysis", size=(900, 800), element_justification='c').layout(layout)
+        self.window = psg.Window("Twitter Sentiment Analysis", size=(1200, 800), element_justification='center', layout=layout)
+
+    def draw_figure(self, canvas, figure):
+        figure_canvas_agg = FigureCanvasTkAgg(figure, canvas)
+        figure_canvas_agg.draw()
+        figure_canvas_agg.get_tk_widget().pack(side='top', fill='both', expand=1)
+        return figure_canvas_agg
+
+    def delete_figure_agg(self, figure_agg):
+        figure_agg.get_tk_widget().forget()
+        plt.close('all')
 
     def start(self):
         print('Starting classifiers...')
@@ -41,12 +52,17 @@ class Window:
         print('Connecting to Twitter\'s API...')
         twitter_api = getTwitterApi()
 
+        self.figure_agg = None
+
         print('Application started.')
         while True:
             self.event, self.values = self.window.Read()
 
             if self.event in (None, 'Exit'):
                 sys.exit(1)
+
+            if self.figure_agg:
+                self.delete_figure_agg(figure_agg=self.figure_agg)
 
             if self.event == 'Exibir Acurácia dos Classificadores':
                 self.window.FindElement('output').update('')
@@ -107,7 +123,9 @@ class Window:
                 plt.pie(result, labels=["Positivo(s)", "Negativo(s)"], colors=["#d0f2ae", "#f2755e"], autopct='%1.1f%%')
                 plt.legend(title="Sentimentos:")
                 plt.title(f"Sentimentos - Palavra-chave: {keyword}")
-                plt.show()
+                fig = plt.gcf()
+                self.figure_agg = self.draw_figure(self.window['-CANVAS-'].TKCanvas, fig)
+                
 
 def getTwitterApi():
     CONSUMER_KEY=Secrets.CONSUMER_KEY
