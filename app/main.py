@@ -6,6 +6,8 @@ from api_secrets import Secrets
 import PySimpleGUI as psg
 import tweepy
 import sys
+import matplotlib.pyplot as plt
+import numpy as np
 
 class Window:
     def __init__(self):
@@ -99,6 +101,13 @@ class Window:
 
                 print(f"Classificados com sentimento negativo: {total_predicted_as_negative} ({(total_predicted_as_negative / total_predicted * 100):.2f}%)".replace('.', ','))
                 print(f"Classificados com sentimento positivo: {total_predicted_as_positive} ({(total_predicted_as_positive / total_predicted * 100):.2f}%)".replace('.', ','))
+                
+                # Show chart
+                result = np.array([total_predicted_as_positive, total_predicted_as_negative])
+                plt.pie(result, labels=["Positivo(s)", "Negativo(s)"], colors=["#d0f2ae", "#f2755e"], autopct='%1.1f%%')
+                plt.legend(title="Sentimentos:")
+                plt.title(f"Sentimentos - Palavra-chave: {keyword}")
+                plt.show()
 
 def getTwitterApi():
     CONSUMER_KEY=Secrets.CONSUMER_KEY
