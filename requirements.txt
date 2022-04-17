@@ -1,4 +1,6 @@
+matplotlib==3.5.1
 nltk==3.7
+numpy==1.21.6
 pandas
 pymongo==4.1.0
 PySimpleGUI==4.59.0
