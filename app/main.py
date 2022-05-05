@@ -1,4 +1,5 @@
 from classifiers_commons import clearTextList
+from ensemblee import returnEnsembleAccuracy
 from svm import SupportVectorMachineClassifier
 from lr import LogisticRegressionClassifier
 from nb import NaiveBayesClassifier
@@ -70,12 +71,14 @@ class Window:
                 acc_svm = svm_classifier.testAndReturnAccuracy() * 100
                 acc_lr = lr_classifier.testAndReturnAccuracy() *  100
                 acc_nb = nb_classifier.testAndReturnAccuracy() * 100
-                acc_ens = (acc_svm + acc_lr + acc_nb) / 3
+                # acc_ens = (acc_svm + acc_lr + acc_nb) / 3 # Wrong, if you do this you aren't testing your ensemble's voting method and will never get a greater acc than an individual classifier.
+                acc_ens = returnEnsembleAccuracy([nb_classifier, lr_classifier, svm_classifier]) * 100
+                
                 print(f'Acurácia:'
                 + f'\n- Support Vector Classifier: {acc_svm:.2f}%'.replace('.', ',')
                 + f'\n- Logistic Regression: {acc_lr:.2f}%'.replace('.', ',')
                 + f'\n- Naïve Bayes: {acc_nb:.2f}%'.replace('.', ',')
-                + f'\n\nO comitê apresenta uma acurácia geral de {acc_ens:.2f}%'.replace('.', ','))
+                + f'\n\nComitê de Classificadores: {acc_ens:.2f}%'.replace('.', ','))
                 continue
             
             if self.event == 'Iniciar Análise':
