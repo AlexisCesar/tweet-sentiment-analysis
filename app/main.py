@@ -16,33 +16,19 @@ class Window:
         psg.theme('Reddit')
 
         layout = [
-            [psg.Text('Twitter Sentiment Analysis', font=('Times New Roman', 24))],
+            [psg.Text('Demonstração', font=('Times New Roman', 24))],
             [psg.Text('', font=('Times New Roman', 16))], 
-            [psg.Text('Palavra-Chave (Nome, Pessoa, Empresa, Hashtag, Usuário...)', font=('Times New Roman', 16))],
+            [psg.Text('Insira o texto:', font=('Times New Roman', 16))],
             [psg.Input(size=(35, 0), key='keyword', font=('Times New Roman', 18))],
-            [psg.Text('Exemplo: #Brasil, @g1, economia...', font=('Times New Roman', 16))], 
             [psg.Text('')], 
-            [psg.Text('Quantidade de tweets a serem buscados:', font=('Times New Roman', 16))],
-            [psg.Slider(range=(1, 100), default_value= 10, orientation='h', size=(30, 60), key='maxTweetCount', font=('Times New Roman', 16))],
-            [psg.Text('Nota: serão recuperados os N tweets mais recentes sobre a palavra-chave', font=('Times New Roman', 16))], 
-            [psg.Text('')], 
-            [psg.Button('Iniciar Análise', font=('Times New Roman', 16)), psg.Button('Exibir Acurácia dos Classificadores', font=('Times New Roman', 16))],
+            [psg.Button('Analisar', font=('Times New Roman', 16))],
             [psg.Text('')], 
             [psg.Text('Saída:', font=('Times New Roman', 16))], 
-            [psg.Output(size=(50, 10), key='output', font=('Times New Roman', 16)), psg.Canvas(size=(600, 400), key="-CANVAS-")]
+            [psg.Output(size=(50, 10), key='output', font=('Times New Roman', 16))]
         ]
 
         self.window = psg.Window("Twitter Sentiment Analysis", size=(1200, 800), element_justification='center', layout=layout)
 
-    def draw_figure(self, canvas, figure):
-        figure_canvas_agg = FigureCanvasTkAgg(figure, canvas)
-        figure_canvas_agg.draw()
-        figure_canvas_agg.get_tk_widget().pack(side='top', fill='both', expand=1)
-        return figure_canvas_agg
-
-    def delete_figure_agg(self, figure_agg):
-        figure_agg.get_tk_widget().forget()
-        plt.close('all')
 
     def start(self):
         print('Starting classifiers...')
@@ -53,81 +39,42 @@ class Window:
         print('Connecting to Twitter\'s API...')
         twitter_api = getTwitterApi()
 
-        self.figure_agg = None
-
         print('Application started.')
         while True:
             self.event, self.values = self.window.Read()
 
             if self.event in (None, 'Exit'):
                 sys.exit(1)
-
-            if self.figure_agg:
-                self.delete_figure_agg(figure_agg=self.figure_agg)
-
-            if self.event == 'Exibir Acurácia dos Classificadores':
-                self.window.FindElement('output').update('')
-
-                acc_svm = svm_classifier.testAndReturnAccuracy() * 100
-                acc_lr = lr_classifier.testAndReturnAccuracy() *  100
-                acc_nb = nb_classifier.testAndReturnAccuracy() * 100
-                # acc_ens = (acc_svm + acc_lr + acc_nb) / 3 # Wrong, if you do this you aren't testing your ensemble's voting method and will never get a greater acc than an individual classifier.
-                acc_ens = returnEnsembleAccuracy([nb_classifier, lr_classifier, svm_classifier]) * 100
-                
-                print(f'Acurácia:'
-                + f'\n- Support Vector Classifier: {acc_svm:.2f}%'.replace('.', ',')
-                + f'\n- Logistic Regression: {acc_lr:.2f}%'.replace('.', ',')
-                + f'\n- Naïve Bayes: {acc_nb:.2f}%'.replace('.', ',')
-                + f'\n\nComitê de Classificadores: {acc_ens:.2f}%'.replace('.', ','))
-                continue
             
-            if self.event == 'Iniciar Análise':
+            if self.event == 'Analisar':
                 self.window.FindElement('output').update('')
 
-                keyword = self.values['keyword']
-                if keyword.replace(' ', '') == '':
-                    print('Informe uma palavra-chave válida!')
+                textToAnalyze = self.values['keyword']
+                if textToAnalyze.replace(' ', '') == '':
+                    print('Informe um texto válido!')
                     continue
                 
-                keyword = keyword.strip()
-                maxTweetCount = int(self.values['maxTweetCount'])
-                print(f'Buscando {maxTweetCount} tweets sobre: \'{keyword}\'')
+                textToAnalyze = textToAnalyze.strip()
                 
-                tweets_found = []
-                for tweet in tweepy.Cursor(twitter_api.search_tweets, q=keyword + '-filter:retweets',
-                                            count=maxTweetCount,
-                                            result_type="recent",
-                                            tweet_mode='extended',
-                                            lang="pt").items(maxTweetCount):
-                    tweets_found.append(tweet.full_text)
+                textToAnalyzeList = clearTextList([textToAnalyze])
 
-                tweets_found = clearTextList(tweets_found)
-                
-                total_predicted_as_positive = total_predicted_as_negative = 0
-                for tweet in tweets_found:
-                    predictions = []
+                textToAnalyze = textToAnalyzeList[0]
 
-                    predictions.append(lr_classifier.classifyText(tweet))
-                    predictions.append(svm_classifier.classifyText(tweet))
-                    predictions.append(nb_classifier.classifyText(tweet))
+                result = ""
 
-                    if predictions.count(0) > predictions.count(1):
-                        total_predicted_as_negative = total_predicted_as_negative + 1
-                    else:
-                        total_predicted_as_positive = total_predicted_as_positive + 1
+                predictions = []
 
-                total_predicted = total_predicted_as_negative + total_predicted_as_positive
+                predictions.append(lr_classifier.classifyText(textToAnalyze))
+                predictions.append(svm_classifier.classifyText(textToAnalyze))
+                predictions.append(nb_classifier.classifyText(textToAnalyze))
 
-                print(f"Classificados com sentimento negativo: {total_predicted_as_negative} ({(total_predicted_as_negative / total_predicted * 100):.2f}%)".replace('.', ','))
-                print(f"Classificados com sentimento positivo: {total_predicted_as_positive} ({(total_predicted_as_positive / total_predicted * 100):.2f}%)".replace('.', ','))
-                
-                # Show chart
-                result = np.array([total_predicted_as_positive, total_predicted_as_negative])
-                plt.pie(result, labels=["Positivo(s)", "Negativo(s)"], colors=["#d0f2ae", "#f2755e"], autopct='%1.1f%%')
-                plt.legend(title="Sentimentos:")
-                plt.title(f"Sentimentos - Palavra-chave: {keyword}")
-                fig = plt.gcf()
-                self.figure_agg = self.draw_figure(self.window['-CANVAS-'].TKCanvas, fig)
+                if predictions.count(0) > predictions.count(1):
+                    result = "sentimento NEGATIVO"
+                else:
+                    result = "sentimento POSITIVO"
+
+                print(f"Resultado: " + result)
+            
                 
 
 def getTwitterApi():
